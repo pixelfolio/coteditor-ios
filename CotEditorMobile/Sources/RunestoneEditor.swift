@@ -25,6 +25,7 @@
 
 import SwiftUI
 import Runestone
+import TreeSitterMarkdownInlineRunestone
 
 // AIDEV-NOTE: UIViewRepresentable wrapper for Runestone's TextView.
 // Uses delegate pattern (NOT @Binding) to prevent re-render thrash.
@@ -97,9 +98,17 @@ struct RunestoneEditor: UIViewRepresentable {
 
     // AIDEV-NOTE: Uses setState with TreeSitterLanguage for syntax highlighting,
     // falls back to plain text assignment when no language is specified.
+    // Must pass CotEditorTheme to TextViewState because setState() overwrites textView.theme.
+    // languageProvider is required for languages with injections (e.g. Markdown
+    // injects markdown_inline for emphasis/bold/links).
     private func applyText(to textView: TextView) {
         if let language {
-            let state = TextViewState(text: textToLoad, language: language)
+            let state = TextViewState(
+                text: textToLoad,
+                theme: CotEditorTheme(),
+                language: language,
+                languageProvider: LanguageProvider()
+            )
             textView.setState(state)
         } else {
             textView.text = textToLoad
@@ -122,6 +131,22 @@ struct RunestoneEditor: UIViewRepresentable {
 
         func textViewDidChange(_ textView: TextView) {
             onTextChange?(textView.text)
+        }
+    }
+}
+
+// AIDEV-NOTE: Provides injected languages on demand. Markdown's TreeSitter grammar uses
+// a two-parser architecture: block-level (markdown) and inline (markdown_inline). The block
+// parser's injections.scm requests "markdown_inline" for emphasis, bold, links, and code spans.
+// Without this provider, inline highlighting silently fails.
+private final class LanguageProvider: TreeSitterLanguageProvider {
+
+    func treeSitterLanguage(named languageName: String) -> TreeSitterLanguage? {
+        switch languageName {
+        case "markdown_inline":
+            return .markdownInline
+        default:
+            return nil
         }
     }
 }

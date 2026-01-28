@@ -65,6 +65,8 @@ targets:
       - package: TreeSitterLanguages
         product: TreeSitterMarkdownRunestone
       - package: TreeSitterLanguages
+        product: TreeSitterMarkdownInlineRunestone
+      - package: TreeSitterLanguages
         product: TreeSitterSwiftRunestone
       - package: TreeSitterLanguages
         product: TreeSitterJSONRunestone
