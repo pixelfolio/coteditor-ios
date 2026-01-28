@@ -36,19 +36,22 @@ struct RunestoneEditor: UIViewRepresentable {
     let showLineNumbers: Bool
     let language: TreeSitterLanguage?
     let onTextChange: ((String) -> Void)?
+    @Binding var isFindPresented: Bool
 
     init(
         textToLoad: String = "",
         loadID: UUID = UUID(),
         showLineNumbers: Bool = true,
         language: TreeSitterLanguage? = nil,
-        onTextChange: ((String) -> Void)? = nil
+        onTextChange: ((String) -> Void)? = nil,
+        isFindPresented: Binding<Bool> = .constant(false)
     ) {
         self.textToLoad = textToLoad
         self.loadID = loadID
         self.showLineNumbers = showLineNumbers
         self.language = language
         self.onTextChange = onTextChange
+        self._isFindPresented = isFindPresented
     }
 
     func makeUIView(context: Context) -> TextView {
@@ -58,6 +61,9 @@ struct RunestoneEditor: UIViewRepresentable {
         textView.isSelectable = true
         textView.backgroundColor = .systemBackground
         textView.editorDelegate = context.coordinator
+        // AIDEV-NOTE: Native UIFindInteraction provides Cmd+F find bar, Cmd+G/Cmd+Shift+G navigation,
+        // case sensitivity toggle, and match highlighting - all with native Liquid Glass styling on iOS 26.
+        textView.isFindInteractionEnabled = true
 
         applyText(to: textView)
         context.coordinator.lastLoadID = loadID
@@ -72,6 +78,13 @@ struct RunestoneEditor: UIViewRepresentable {
         if context.coordinator.lastLoadID != loadID {
             context.coordinator.lastLoadID = loadID
             applyText(to: textView)
+        }
+
+        // AIDEV-NOTE: SwiftUI's responder chain doesn't forward Cmd+F to UIFindInteraction
+        // in UIViewRepresentable. Present the find navigator programmatically via binding.
+        if isFindPresented {
+            textView.findInteraction?.presentFindNavigator(showingReplace: false)
+            DispatchQueue.main.async { isFindPresented = false }
         }
     }
 

@@ -33,6 +33,7 @@ struct EditorView: View {
     let fileURL: URL?
 
     @State private var loadID = UUID()
+    @State private var isFindPresented = false
 
     private var fileName: String {
         fileURL?.lastPathComponent ?? "Untitled"
@@ -46,9 +47,18 @@ struct EditorView: View {
             language: LanguageDetection.language(for: fileURL),
             onTextChange: { newText in
                 document.text = newText
-            }
+            },
+            isFindPresented: $isFindPresented
         )
         .navigationTitle(fileName)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Find", systemImage: "magnifyingglass") {
+                    isFindPresented = true
+                }
+                .keyboardShortcut("f", modifiers: .command)
+            }
+        }
     }
 }
