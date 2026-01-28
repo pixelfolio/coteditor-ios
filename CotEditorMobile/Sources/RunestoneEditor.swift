@@ -60,6 +60,13 @@ struct RunestoneEditor: UIViewRepresentable {
         textView.isEditable = true
         textView.isSelectable = true
         textView.backgroundColor = .systemBackground
+        // AIDEV-NOTE: Disable iOS text input features that corrupt code (curly quotes, autocorrect, etc.)
+        textView.autocorrectionType = .no
+        textView.smartQuotesType = .no
+        textView.smartDashesType = .no
+        textView.smartInsertDeleteType = .no
+        textView.autocapitalizationType = .none
+        textView.spellCheckingType = .no
         textView.editorDelegate = context.coordinator
         // AIDEV-NOTE: Native UIFindInteraction provides Cmd+F find bar, Cmd+G/Cmd+Shift+G navigation,
         // case sensitivity toggle, and match highlighting - all with native Liquid Glass styling on iOS 26.
