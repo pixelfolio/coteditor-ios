@@ -26,36 +26,42 @@
 import SwiftUI
 import Runestone
 
-// AIDEV-NOTE: Phase 0.5 spike - delegate pattern per plan (NOT @Binding to prevent re-render loops)
-// Uses loadID to distinguish programmatic loads from user edits.
+// AIDEV-NOTE: UIViewRepresentable wrapper for Runestone's TextView.
+// Uses delegate pattern (NOT @Binding) to prevent re-render thrash.
+// loadID distinguishes programmatic text loads from user edits.
 struct RunestoneEditor: UIViewRepresentable {
 
     let textToLoad: String
     let loadID: UUID
     let showLineNumbers: Bool
+    let language: TreeSitterLanguage?
     let onTextChange: ((String) -> Void)?
 
     init(
         textToLoad: String = "",
         loadID: UUID = UUID(),
         showLineNumbers: Bool = true,
+        language: TreeSitterLanguage? = nil,
         onTextChange: ((String) -> Void)? = nil
     ) {
         self.textToLoad = textToLoad
         self.loadID = loadID
         self.showLineNumbers = showLineNumbers
+        self.language = language
         self.onTextChange = onTextChange
     }
 
     func makeUIView(context: Context) -> TextView {
         let textView = TextView()
-        textView.text = textToLoad
         textView.showLineNumbers = showLineNumbers
         textView.isEditable = true
         textView.isSelectable = true
         textView.backgroundColor = .systemBackground
         textView.editorDelegate = context.coordinator
+
+        applyText(to: textView)
         context.coordinator.lastLoadID = loadID
+
         return textView
     }
 
@@ -65,6 +71,17 @@ struct RunestoneEditor: UIViewRepresentable {
         // AIDEV-NOTE: Only replace text when loadID changes (programmatic load, not user edit)
         if context.coordinator.lastLoadID != loadID {
             context.coordinator.lastLoadID = loadID
+            applyText(to: textView)
+        }
+    }
+
+    // AIDEV-NOTE: Uses setState with TreeSitterLanguage for syntax highlighting,
+    // falls back to plain text assignment when no language is specified.
+    private func applyText(to textView: TextView) {
+        if let language {
+            let state = TextViewState(text: textToLoad, language: language)
+            textView.setState(state)
+        } else {
             textView.text = textToLoad
         }
     }
@@ -73,6 +90,8 @@ struct RunestoneEditor: UIViewRepresentable {
         Coordinator(onTextChange: onTextChange)
     }
 
+    // AIDEV-NOTE: textView.text access warning is a known Swift 6 concurrency false positive.
+    // UIKit delegate methods are always called on the main thread.
     final class Coordinator: NSObject, TextViewDelegate {
         let onTextChange: ((String) -> Void)?
         var lastLoadID: UUID?

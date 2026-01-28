@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  LanguageDetection.swift
 //
 //  CotEditor for iOS
 //  https://coteditor.com
@@ -23,16 +23,27 @@
 //  limitations under the License.
 //
 
-import SwiftUI
+import Foundation
+import Runestone
+import TreeSitterSwiftRunestone
+import TreeSitterJSONRunestone
+import TreeSitterMarkdownRunestone
 
-// AIDEV-NOTE: Phase 0.5 spike - showing SpikeView for performance testing
-struct ContentView: View {
+// AIDEV-NOTE: Maps file extensions to TreeSitter languages. Only 3 highlighted languages for MVP
+// (Swift, JSON, Markdown). All other text files open as plain text (no highlighting).
+enum LanguageDetection {
 
-    var body: some View {
-        SpikeView()
+    static func language(for url: URL?) -> TreeSitterLanguage? {
+        guard let ext = url?.pathExtension.lowercased() else { return nil }
+        switch ext {
+        case "swift":
+            return .swift
+        case "json":
+            return .json
+        case "md", "markdown":
+            return .markdown
+        default:
+            return nil
+        }
     }
-}
-
-#Preview {
-    ContentView()
 }

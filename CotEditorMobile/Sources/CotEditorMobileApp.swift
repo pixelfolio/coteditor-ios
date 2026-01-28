@@ -25,13 +25,15 @@
 
 import SwiftUI
 
-// AIDEV-NOTE: Phase 0 placeholder - will be replaced with DocumentGroup in Phase 4
+// AIDEV-NOTE: Document-based app using DocumentGroup for file browsing and management.
+// DocumentGroup provides the Files-style document browser, file creation, iCloud support,
+// and auto-save. The EditorView is presented when a document is opened.
 @main
 struct CotEditorMobileApp: App {
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        DocumentGroup(newDocument: TextDocument()) { configuration in
+            EditorView(document: configuration.$document, fileURL: configuration.fileURL)
         }
     }
 }
