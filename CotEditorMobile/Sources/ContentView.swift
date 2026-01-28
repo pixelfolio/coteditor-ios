@@ -25,29 +25,11 @@
 
 import SwiftUI
 
-// AIDEV-NOTE: Phase 0 placeholder view - will be replaced with RunestoneEditor in Phase 1
+// AIDEV-NOTE: Phase 0.5 spike - showing SpikeView for performance testing
 struct ContentView: View {
 
     var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "doc.text")
-                .font(.system(size: 60))
-                .foregroundStyle(.secondary)
-
-            Text("CotEditor")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-
-            Text("iOS Edition")
-                .font(.title2)
-                .foregroundStyle(.secondary)
-
-            Text("Phase 0: Project Setup Complete")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-                .padding(.top, 40)
-        }
-        .padding()
+        SpikeView()
     }
 }
 
