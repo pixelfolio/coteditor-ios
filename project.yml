@@ -1,0 +1,70 @@
+name: CotEditorMobile
+options:
+  bundleIdPrefix: com.pixelfolio
+  deploymentTarget:
+    # iOS 26 minimum per plan - Liquid Glass design language requirement
+    iOS: "26.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+  defaultConfig: Debug
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: HT3Z3A72WZ
+
+configs:
+  Debug:
+    SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+    SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+  Release:
+    SWIFT_OPTIMIZATION_LEVEL: "-O"
+
+packages:
+  Runestone:
+    url: https://github.com/simonbs/Runestone
+    from: "0.4.0"
+  TreeSitterLanguages:
+    url: https://github.com/simonbs/TreeSitterLanguages
+    from: "0.1.0"
+
+# AIDEV-NOTE: EditorCore will be added as local package dependency once updated for iOS platform
+# For Phase 0, we verify the app structure builds with Runestone/TreeSitterLanguages
+
+targets:
+  CotEditorMobile:
+    type: application
+    platform: iOS
+    sources:
+      - path: CotEditorMobile/Sources
+        group: Sources
+      - path: CotEditorMobile/Resources
+        group: Resources
+        optional: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pixelfolio.coteditor-mobile
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_CFBundleDisplayName: CotEditor
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    dependencies:
+      - package: Runestone
+      # MVP languages: Markdown, Swift, JSON (per plan - 4 languages only)
+      - package: TreeSitterLanguages
+        product: TreeSitterMarkdownRunestone
+      - package: TreeSitterLanguages
+        product: TreeSitterSwiftRunestone
+      - package: TreeSitterLanguages
+        product: TreeSitterJSONRunestone
+    entitlements:
+      path: CotEditorMobile/CotEditorMobile.entitlements

@@ -8,6 +8,9 @@ xcuserdata/
 *.xcscmblueprint
 default.profraw
 
+# XcodeGen - generated project (regenerate with `xcodegen generate`)
+CotEditorMobile.xcodeproj/
+
 # Swift Package Manager
 .build
 .swiftpm
