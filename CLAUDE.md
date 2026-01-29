@@ -14,6 +14,14 @@ This is an iOS port of [CotEditor](https://github.com/coteditor/CotEditor), a li
 - **iOS 26 minimum** - leveraging latest SwiftUI and Liquid Glass design
 - **Personal use MVP** - functional, stable app for daily text editing
 
+## Development Simulator
+
+**CotEditor-Dev** — Dedicated simulator for this project. Always use this for builds and testing.
+- **Device:** iPhone 17 Pro
+- **Runtime:** iOS 26.2
+- **UDID:** `EE1814E6-458E-4DCF-B2D8-01A280FBDC2B`
+- **Bundle ID:** `com.pixelfolio.coteditor-mobile`
+
 ## Technical Architecture
 
 ### Text Engine

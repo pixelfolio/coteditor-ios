@@ -34,31 +34,68 @@ struct EditorView: View {
 
     @State private var loadID = UUID()
     @State private var isFindPresented = false
+    @State private var isPreviewActive = false
+    @AppStorage("showLineNumbers") private var showLineNumbers = true
 
     private var fileName: String {
         fileURL?.lastPathComponent ?? "Untitled"
     }
 
+    private var isMarkdown: Bool {
+        LanguageDetection.isMarkdown(fileURL)
+    }
+
     var body: some View {
-        RunestoneEditor(
-            textToLoad: document.text,
-            loadID: loadID,
-            showLineNumbers: true,
-            language: LanguageDetection.language(for: fileURL),
-            onTextChange: { newText in
-                document.text = newText
-            },
-            isFindPresented: $isFindPresented
-        )
-        .navigationTitle(fileName)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button("Find", systemImage: "magnifyingglass") {
-                    isFindPresented = true
+        content
+            .navigationTitle(fileName)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    if isMarkdown {
+                        Button {
+                            isPreviewActive.toggle()
+                        } label: {
+                            Label(
+                                isPreviewActive ? "Editor" : "Preview",
+                                systemImage: isPreviewActive ? "pencil" : "eye"
+                            )
+                        }
+                        .keyboardShortcut("p", modifiers: [.command, .shift])
+                    }
+
+                    Button {
+                        showLineNumbers.toggle()
+                    } label: {
+                        Label(
+                            showLineNumbers ? "Hide Line Numbers" : "Show Line Numbers",
+                            systemImage: "list.number"
+                        )
+                        .symbolVariant(showLineNumbers ? .none : .slash)
+                    }
+
+                    Button("Find", systemImage: "magnifyingglass") {
+                        isFindPresented = true
+                    }
+                    .keyboardShortcut("f", modifiers: .command)
                 }
-                .keyboardShortcut("f", modifiers: .command)
             }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        if isPreviewActive && isMarkdown {
+            MarkdownPreviewView(markdown: document.text)
+        } else {
+            RunestoneEditor(
+                textToLoad: document.text,
+                loadID: loadID,
+                showLineNumbers: showLineNumbers,
+                language: LanguageDetection.language(for: fileURL),
+                onTextChange: { newText in
+                    document.text = newText
+                },
+                isFindPresented: $isFindPresented
+            )
         }
     }
 }

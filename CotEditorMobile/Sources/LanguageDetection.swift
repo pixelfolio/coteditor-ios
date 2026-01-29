@@ -46,4 +46,9 @@ enum LanguageDetection {
             return nil
         }
     }
+
+    static func isMarkdown(_ url: URL?) -> Bool {
+        guard let ext = url?.pathExtension.lowercased() else { return false }
+        return ext == "md" || ext == "markdown"
+    }
 }
