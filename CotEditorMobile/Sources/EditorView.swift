@@ -36,6 +36,8 @@ struct EditorView: View {
     @State private var isFindPresented = false
     @State private var isPreviewActive = false
     @AppStorage("showLineNumbers") private var showLineNumbers = true
+    @AppStorage("editorFontName") private var fontName = "SF Mono"
+    @AppStorage("editorFontSize") private var fontSize: Double = 14
 
     private var fileName: String {
         fileURL?.lastPathComponent ?? "Untitled"
@@ -63,15 +65,7 @@ struct EditorView: View {
                         .keyboardShortcut("p", modifiers: [.command, .shift])
                     }
 
-                    Button {
-                        showLineNumbers.toggle()
-                    } label: {
-                        Label(
-                            showLineNumbers ? "Hide Line Numbers" : "Show Line Numbers",
-                            systemImage: "list.number"
-                        )
-                        .symbolVariant(showLineNumbers ? .none : .slash)
-                    }
+                    viewOptionsMenu
 
                     Button("Find", systemImage: "magnifyingglass") {
                         isFindPresented = true
@@ -90,12 +84,56 @@ struct EditorView: View {
                 textToLoad: document.text,
                 loadID: loadID,
                 showLineNumbers: showLineNumbers,
+                fontName: fontName,
+                fontSize: fontSize,
                 language: LanguageDetection.language(for: fileURL),
                 onTextChange: { newText in
                     document.text = newText
                 },
                 isFindPresented: $isFindPresented
             )
+        }
+    }
+
+    // AIDEV-NOTE: View Options menu consolidates editor display settings (font, font size,
+    // line numbers) into a single toolbar button following Finder/Safari "View Options" pattern.
+    private var viewOptionsMenu: some View {
+        Menu {
+            Picker("Font", selection: $fontName) {
+                Text("SF Mono").tag("SF Mono")
+                Text("Menlo").tag("Menlo")
+                Text("Courier New").tag("Courier New")
+            }
+
+            Menu("Font Size") {
+                Button {
+                    fontSize = max(10, fontSize - 2)
+                } label: {
+                    Label("Smaller", systemImage: "minus")
+                }
+                .keyboardShortcut("-", modifiers: .command)
+
+                Button {
+                    fontSize = min(32, fontSize + 2)
+                } label: {
+                    Label("Larger", systemImage: "plus")
+                }
+                .keyboardShortcut("=", modifiers: .command)
+
+                Divider()
+
+                Picker("Size", selection: $fontSize) {
+                    ForEach([12, 14, 16, 18, 20, 24], id: \.self) { size in
+                        Text("\(size) pt").tag(Double(size))
+                    }
+                }
+            }
+
+            Divider()
+
+            Toggle("Show Line Numbers", isOn: $showLineNumbers)
+        } label: {
+            Label("View Options", systemImage: "textformat.size")
         }
     }
 }

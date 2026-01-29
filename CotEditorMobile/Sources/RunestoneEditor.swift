@@ -35,6 +35,8 @@ struct RunestoneEditor: UIViewRepresentable {
     let textToLoad: String
     let loadID: UUID
     let showLineNumbers: Bool
+    let fontName: String
+    let fontSize: CGFloat
     let language: TreeSitterLanguage?
     let onTextChange: ((String) -> Void)?
     @Binding var isFindPresented: Bool
@@ -43,6 +45,8 @@ struct RunestoneEditor: UIViewRepresentable {
         textToLoad: String = "",
         loadID: UUID = UUID(),
         showLineNumbers: Bool = true,
+        fontName: String = "SF Mono",
+        fontSize: CGFloat = 14,
         language: TreeSitterLanguage? = nil,
         onTextChange: ((String) -> Void)? = nil,
         isFindPresented: Binding<Bool> = .constant(false)
@@ -50,6 +54,8 @@ struct RunestoneEditor: UIViewRepresentable {
         self.textToLoad = textToLoad
         self.loadID = loadID
         self.showLineNumbers = showLineNumbers
+        self.fontName = fontName
+        self.fontSize = fontSize
         self.language = language
         self.onTextChange = onTextChange
         self._isFindPresented = isFindPresented
@@ -73,8 +79,22 @@ struct RunestoneEditor: UIViewRepresentable {
         // case sensitivity toggle, and match highlighting - all with native Liquid Glass styling on iOS 26.
         textView.isFindInteractionEnabled = true
 
+        // AIDEV-NOTE: Text padding - adds breathing room between text and screen edge / line numbers.
+        // Left inset provides margin from gutter, right inset from screen edge.
+        textView.textContainerInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+
+        // AIDEV-NOTE: Current line highlighting - visually indicates which line the cursor is on.
+        // Uses selectedLineBackgroundColor from the theme.
+        textView.lineSelectionDisplayType = .line
+
+        // AIDEV-NOTE: Smart indentation - uses 4 spaces (Swift standard). Runestone automatically
+        // copies the previous line's indentation when pressing Return.
+        textView.indentStrategy = .space(length: 4)
+
         applyText(to: textView)
         context.coordinator.lastLoadID = loadID
+        context.coordinator.lastFontName = fontName
+        context.coordinator.lastFontSize = fontSize
 
         return textView
     }
@@ -85,7 +105,16 @@ struct RunestoneEditor: UIViewRepresentable {
         // AIDEV-NOTE: Only replace text when loadID changes (programmatic load, not user edit)
         if context.coordinator.lastLoadID != loadID {
             context.coordinator.lastLoadID = loadID
+            context.coordinator.lastFontName = fontName
+            context.coordinator.lastFontSize = fontSize
             applyText(to: textView)
+        }
+
+        // AIDEV-NOTE: Update theme when font settings change without reloading text
+        if context.coordinator.lastFontName != fontName || context.coordinator.lastFontSize != fontSize {
+            context.coordinator.lastFontName = fontName
+            context.coordinator.lastFontSize = fontSize
+            textView.theme = CotEditorTheme(fontName: fontName, fontSize: fontSize)
         }
 
         // AIDEV-NOTE: SwiftUI's responder chain doesn't forward Cmd+F to UIFindInteraction
@@ -102,15 +131,17 @@ struct RunestoneEditor: UIViewRepresentable {
     // languageProvider is required for languages with injections (e.g. Markdown
     // injects markdown_inline for emphasis/bold/links).
     private func applyText(to textView: TextView) {
+        let theme = CotEditorTheme(fontName: fontName, fontSize: fontSize)
         if let language {
             let state = TextViewState(
                 text: textToLoad,
-                theme: CotEditorTheme(),
+                theme: theme,
                 language: language,
                 languageProvider: LanguageProvider()
             )
             textView.setState(state)
         } else {
+            textView.theme = theme
             textView.text = textToLoad
         }
     }
@@ -124,6 +155,8 @@ struct RunestoneEditor: UIViewRepresentable {
     final class Coordinator: NSObject, TextViewDelegate {
         let onTextChange: ((String) -> Void)?
         var lastLoadID: UUID?
+        var lastFontName: String?
+        var lastFontSize: CGFloat?
 
         init(onTextChange: ((String) -> Void)?) {
             self.onTextChange = onTextChange

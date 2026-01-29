@@ -33,16 +33,30 @@ import Runestone
 final class CotEditorTheme: Theme {
 
     private let defaultTheme = DefaultTheme()
+    private let customFont: UIFont
+    private let customLineNumberFont: UIFont
 
-    // MARK: - Theme protocol properties (delegate to DefaultTheme)
+    // AIDEV-NOTE: Configurable font support for View Options menu.
+    // Falls back to system monospace if requested font name is unavailable.
+    init(fontName: String = "SF Mono", fontSize: CGFloat = 14) {
+        if let font = UIFont(name: fontName, size: fontSize) {
+            self.customFont = font
+        } else {
+            self.customFont = .monospacedSystemFont(ofSize: fontSize, weight: .regular)
+        }
+        // Line number font is slightly smaller than editor font
+        self.customLineNumberFont = customFont.withSize(max(customFont.pointSize - 2, 10))
+    }
 
-    var font: UIFont { defaultTheme.font }
+    // MARK: - Theme protocol properties (delegate to DefaultTheme, except fonts)
+
+    var font: UIFont { customFont }
     var textColor: UIColor { defaultTheme.textColor }
     var gutterBackgroundColor: UIColor { defaultTheme.gutterBackgroundColor }
     var gutterHairlineColor: UIColor { defaultTheme.gutterHairlineColor }
     var gutterHairlineWidth: CGFloat { defaultTheme.gutterHairlineWidth }
     var lineNumberColor: UIColor { defaultTheme.lineNumberColor }
-    var lineNumberFont: UIFont { defaultTheme.lineNumberFont }
+    var lineNumberFont: UIFont { customLineNumberFont }
     var selectedLineBackgroundColor: UIColor { defaultTheme.selectedLineBackgroundColor }
     var selectedLinesLineNumberColor: UIColor { defaultTheme.selectedLinesLineNumberColor }
     var selectedLinesGutterBackgroundColor: UIColor { defaultTheme.selectedLinesGutterBackgroundColor }
