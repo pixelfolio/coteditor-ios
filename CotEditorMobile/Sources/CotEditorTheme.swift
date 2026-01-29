@@ -82,6 +82,10 @@ final class CotEditorTheme: Theme {
             return .link
         case "text.reference":
             return .secondaryLabel
+        // AIDEV-NOTE: Dim Markdown syntax markers (hashtags, asterisks, backticks, brackets)
+        // so content is visually prominent while markers remain visible but subtle.
+        case "punctuation.special", "punctuation.delimiter":
+            return .tertiaryLabel
         default:
             // Fall back to DefaultTheme for code-oriented names
             return defaultTheme.textColor(for: highlightName)
