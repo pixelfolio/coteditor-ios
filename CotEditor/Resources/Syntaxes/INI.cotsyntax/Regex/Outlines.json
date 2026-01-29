@@ -1,7 +1,0 @@
-[
-  {
-    "beginString" : "^([ \\t]*)\\[(.+)\\]",
-    "description" : "section",
-    "keyString" : "$1$2"
-  }
-]

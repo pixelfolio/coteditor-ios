@@ -1,7 +1,0 @@
-[
-  {
-    "beginString" : "^SUMMARY:(.*)$",
-    "description" : "summary",
-    "keyString" : ""
-  }
-]

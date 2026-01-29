@@ -15,3 +15,6 @@ CotEditorMobile.xcodeproj/
 .build
 .swiftpm
 Packages/*/Package.resolved
+
+# IDB (iOS Development Bridge) artifacts
+idb-*/
